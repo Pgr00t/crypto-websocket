@@ -1,0 +1,57 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Crypto Live Prices</title>
+    <style>
+        body { font-family: monospace; background: #121212; color: #fff; padding: 20px; }
+        .card { border: 1px solid #333; padding: 15px; margin-bottom: 10px; border-radius: 5px; background: #1e1e1e; }
+        .price { font-size: 1.5em; font-weight: bold; }
+        .positive { color: #00ff00; }
+        .negative { color: #ff0000; }
+    </style>
+</head>
+<body>
+    <h1>Crypto Live Prices 🚀</h1>
+    <div id="status">Connecting...</div>
+    <div id="prices"></div>
+
+    <script>
+        // Connect automatically to the proper URL whether deployed or local
+        const BACKEND_URL = "my-fastapi-backend.onrender.com"; // TODO: We will replace this after deploying to Render!
+        
+        const isLocal = window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1' || window.location.hostname === '';
+        const wsProtocol = window.location.protocol === 'https:' || !isLocal ? 'wss:' : 'ws:';
+        const wsHost = isLocal ? 'localhost:8000' : BACKEND_URL;
+        
+        const ws = new WebSocket(`${wsProtocol}//${wsHost}/ws`);
+        const status = document.getElementById("status");
+        const pricesDiv = document.getElementById("prices");
+        const dataMap = {};
+
+        ws.onopen = () => { status.innerText = `Connected to Backend! Waiting for prices...`; };
+        ws.onclose = () => { status.innerText = "Disconnected."; };
+        ws.onerror = (error) => { status.innerText = `Error connecting to backend (${wsHost}). Make sure the backend is running!`; };
+
+        ws.onmessage = (event) => {
+            const data = JSON.parse(event.data);
+            dataMap[data.symbol] = data;
+            
+            pricesDiv.innerHTML = "";
+            for (const sym in dataMap) {
+                const item = dataMap[sym];
+                const changeClass = parseFloat(item.price_change_percent_24h) >= 0 ? 'positive' : 'negative';
+                pricesDiv.innerHTML += `
+                    <div class="card">
+                        <h3>${item.symbol}</h3>
+                        <div class="price">$${parseFloat(item.last_price).toFixed(2)}</div>
+                        <div class="change ${changeClass}">24h Change: ${item.price_change_percent_24h}%</div>
+                        <small>Last Updated: ${new Date(item.timestamp).toLocaleTimeString()}</small>
+                    </div>
+                `;
+            }
+        };
+    </script>
+</body>
+</html>
