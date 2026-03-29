@@ -14,12 +14,15 @@
 </head>
 <body>
     <h1>Crypto Live Prices 🚀</h1>
+    <p style="color: #aaa; font-size: 0.9em; margin-bottom: 20px;">
+        <em>Note: The backend is hosted on a free tier. If it isn't connecting immediately, please allow up to 60 seconds for the server to wake up from inactivity.</em>
+    </p>
     <div id="status">Connecting...</div>
     <div id="prices"></div>
 
     <script>
         // Connect automatically to the proper URL whether deployed or local
-        const BACKEND_URL = "my-fastapi-backend.onrender.com"; // TODO: We will replace this after deploying to Render!
+        const BACKEND_URL = "crypto-websocket.onrender.com";
         
         const isLocal = window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1' || window.location.hostname === '';
         const wsProtocol = window.location.protocol === 'https:' || !isLocal ? 'wss:' : 'ws:';
